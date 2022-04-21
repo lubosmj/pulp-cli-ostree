@@ -18,27 +18,15 @@ expect_succ pulp ostree repository create --name "cli_test_ostree_repository1"
 expect_succ pulp ostree repository sync --name "cli_test_ostree_repository1" \
   --remote "cli_test_ostree_remote"
 
-if [ "$CLI15" = "True" ]
-then
-  expect_succ pulp ostree repository content --type "ref" list \
-    --repository "cli_test_ostree_repository1"
-else
-  expect_succ pulp ostree repository content list --repository "cli_test_ostree_repository1" \
-    --type "ref"
-fi
+expect_succ pulp ostree repository content --type "ref" list \
+  --repository "cli_test_ostree_repository1"
 
 COMMIT_CHECKSUM1=$(echo "$OUTPUT" | jq -r ".[0].checksum")
 COMMIT_CHECKSUM2=$(echo "$OUTPUT" | jq -r ".[1].checksum")
 REF_NAME2=$(echo "$OUTPUT" | jq -r ".[1].name")
 
-if [ "$CLI15" = "True" ]
-then
-  expect_succ pulp ostree repository content --type "config" list \
-    --repository "cli_test_ostree_repository1"
-else
-  expect_succ pulp ostree repository content list --repository "cli_test_ostree_repository1" \
-    --type "config"
-fi
+expect_succ pulp ostree repository content --type "config" list \
+  --repository "cli_test_ostree_repository1"
 
 CONFIG_HREF=$(echo "$OUTPUT" | jq -r ".[0].pulp_href")
 
@@ -78,19 +66,25 @@ expect_succ pulp ostree repository ref add --repository "cli_test_ostree_reposit
 
 # list content stored within the latest repository versions
 expect_succ pulp ostree repository ref list --repository "cli_test_ostree_repository1"
+
+if [ "$CLI15" = "False" ]
+then
 expect_succ pulp ostree repository ref list --repository "cli_test_ostree_repository1" \
   --type "ref"
+fi
 
 expect_succ pulp ostree repository commit list --repository "cli_test_ostree_repository1"
+
+if [ "$CLI15" = "False" ]
+then
 expect_succ pulp ostree repository commit list --repository "cli_test_ostree_repository1" \
   --type "commit"
+fi
 
 expect_succ pulp ostree repository config list --repository "cli_test_ostree_repository1"
-if [ "$CLI15" = "True" ]
+
+if [ "$CLI15" = "False" ]
 then
-  expect_succ pulp ostree repository config --type "config" list \
-    --repository "cli_test_ostree_repository1"
-else
   expect_succ pulp ostree repository config list --repository "cli_test_ostree_repository1" \
     --type "config"
 fi
@@ -99,13 +93,16 @@ expect_succ pulp ostree repository content list --repository "cli_test_ostree_re
 
 if [ "$CLI15" = "True" ]
 then
-  expect_succ pulp ostree repository content --type "all" list \
-    --repository "cli_test_ostree_repository1" \
-  expect_succ pulp ostree repository content --type "commit" list \
+  expect_succ pulp ostree repository content --all-types list \
     --repository "cli_test_ostree_repository1" \
 else
-  expect_succ pulp ostree repository content list --repository "cli_test_ostree_repository1" \
-    --type "all"
-  expect_succ pulp ostree repository content list --repository "cli_test_ostree_repository1" \
-    --type "commit"
+  expect_succ pulp ostree repository content --type "all" list \
+    --repository "cli_test_ostree_repository1" \
 fi
+
+expect_succ pulp ostree repository content --type "commit" list \
+  --repository "cli_test_ostree_repository1" \
+expect_succ pulp ostree repository content --type "ref" list \
+  --repository "cli_test_ostree_repository1" \
+expect_succ pulp ostree repository content --type "config" list \
+  --repository "cli_test_ostree_repository1" \
