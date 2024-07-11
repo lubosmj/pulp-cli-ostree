@@ -9,7 +9,7 @@ from pulp_glue.common.context import (
     PulpRepositoryContext,
 )
 from pulp_glue.common.i18n import get_translation
-from pulp_glue.core.context import PulpArtifactContext
+from pulp_glue.core.context import PulpArtifactContext, PulpUploadContext
 from pulp_glue.ostree.context import (
     PulpOstreeCommitContentContext,
     PulpOstreeConfigContentContext,
@@ -197,6 +197,12 @@ def sync(
     required=True,
     help=_("Name of a repository which contains the imported commits"),
 )
+@click.option(
+    "--parallel",
+    is_flag=True,
+    default=False,
+    help=_("Run the uploading in parallel"),
+)
 @pass_repository_context
 @pass_pulp_context
 def import_all(
@@ -205,11 +211,12 @@ def import_all(
     file: IO[bytes],
     chunk_size: int,
     repository_name: str,
+    parallel: bool,
 ) -> None:
     assert isinstance(repository_ctx, PulpOstreeRepositoryContext)
 
     repository_href = repository_ctx.pulp_href
-    artifact_href = PulpArtifactContext(pulp_ctx).upload(file, chunk_size)
+    artifact_href = PulpArtifactContext(pulp_ctx).upload(file, chunk_size, parallel=parallel)
     kwargs = {
         "href": repository_href,
         "artifact": artifact_href,
@@ -235,6 +242,12 @@ def import_all(
     required=False,
     help=_("Name of a parent commit"),
 )
+@click.option(
+    "--parallel",
+    is_flag=True,
+    default=False,
+    help=_("Run the uploading in parallel"),
+)
 @pass_repository_context
 @pass_pulp_context
 def import_commits(
@@ -243,13 +256,14 @@ def import_commits(
     file: IO[bytes],
     chunk_size: int,
     repository_name: str,
+    parallel: bool,
     ref: Optional[str],
     parent_commit: Optional[str],
 ) -> None:
     assert isinstance(repository_ctx, PulpOstreeRepositoryContext)
 
     repository_href = repository_ctx.pulp_href
-    artifact_href = PulpArtifactContext(pulp_ctx).upload(file, chunk_size)
+    artifact_href = PulpArtifactContext(pulp_ctx).upload(file, chunk_size, parallel=parallel)
 
     kwargs = {
         "href": repository_href,
